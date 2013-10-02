@@ -1,0 +1,515 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>USLUNCHBOX</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="cache-control" content="max-age=0" />
+<meta http-equiv="cache-control" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+<meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+<meta http-equiv="pragma" content="no-cache" />
+<link rel="stylesheet" type="text/css" href="newresources/css/style.css" />
+<link type="text/css" href="css/custom-theme/jquery-ui-1.8.18.custom.css" rel="Stylesheet" />
+<link href="css/loadmask/jquery.loadmask.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="js/jquery-ui-1.8.18.custom.min.js"></script>
+<script type="text/javascript" src="js/jquery.loadmask.min.js"></script>
+<script type="text/javascript" src="js/jquery.maxlength.min.js"></script>
+<script type="text/javascript" src="js/uslunchbox_common.js"></script>
+<script src="js/sha1.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+var _wt_account = "uslunchbox2";
+(function() {
+	var st = document.createElement('script'); st.type = 'text/javascript';st.async = true; st.src =  'http://23.23.192.51/WebTracker/js/wt.js';
+	var s = document.getElementsByTagName('script')[0];s.parentNode.insertBefore(st, s);
+})();
+    $(document).ready(function() {
+	
+		// alert("USLunhbox is under maintenance. New dishes will be added in the next week!");
+		// window.location = "onlineorder.html";
+		
+		// Check the site selection
+		checkFacebook();
+		checkSite();
+		adsInit('sidebar');
+		
+    	$('#sign-in-dialog input').maxlength({max: 26});
+    	$('#email,#contact_name').maxlength({max: 26});
+    	$('#contact_phone').maxlength({max: 12});
+    	
+    	$('body').mask('Loading...', 100);
+    	var total_num_dishes = 0;
+    	$.get('PlaceOrderServlet', {'action':'getorders'}, function(data){
+    		var order = data;		
+    		if (order) {
+	    		$('#price_sum').text("$"+order.price_sum);
+	    		$('#quantity_sum').text(order.quantity_sum);
+	    		$('#restaurant').text(order.restaurant_name);
+	    		$('#order-table').attr('restaurant-id',order.restaurant_id);
+	    		$.each(order.dishes, function(index, dish){
+	    			var row = "<tr><td>"+dish.dish_name+"</td>";
+	    			row += "<td>"+dish.side_dish_name+"</td>";
+	    			row += "<td>"+dish.staple_food_name+"</td>";
+	    			row += "<td>"+dish.restaurant_name+"</td>";
+	    			row += "<td>"+dish.quantity+"</td>";
+	    			row += "<td>$"+dish.dish_price+"</td></tr>";
+	    			$('#order_dishes').append(row);
+	    			total_num_dishes += parseInt(dish.quantity);
+	    		});
+    		}
+    		
+    		$.post('PlaceOrderServlet', {'action':'prepare'}, function(data){
+        		var userRet = data.user;
+        		if (userRet.result == 'true') {
+        			$('#email').val(userRet.email);
+        			$('#email').attr('disabled','disabled');
+        			$('#contact_name').val(userRet.contact_name);
+        			$('#contact_phone').val(userRet.phone);
+        			$('#prepaid_balance').text(userRet.prepaid);
+        		}
+        		else {
+        			$('#email').val("");
+        			$('#email').removeAttr('disabled');
+        			$('#contact_name').val("");
+        			$('#contact_phone').val("");
+        			$('#prepaid_balance').val("");
+        		}
+        		
+        		$('#deliver_time').empty();
+        		$('#location').empty();
+        		$('body').unmask();
+        		var area_index = 0;
+        		var num_deliver_options = 0;
+        		for (var deliver_loc in data.deliver_loc_times) {
+        			// Add the deliver time for this location
+        			var loc = data.deliver_loc_times[deliver_loc];
+        			var deliver_timeArray = loc.delivertimes;
+        			$.each(deliver_timeArray, function(index, deliverTime){
+        				var option = "<option area='"+area_index+"' value='"+deliverTime+"' >"+deliverTime+" (24 hours time)</option>";
+	        			$('#deliver_time').append(option);
+	        			num_deliver_options = num_deliver_options +1;
+        			});
+        			
+        			// Add the deliver location
+        			var option;
+        			if (area_index == 0) {
+        				option = "<option selected='selected' value='"+deliver_loc+"' >"+deliver_loc+"</option>";            		
+        			}
+        			else {
+        				option = "<option value='"+deliver_loc+"' >"+deliver_loc+"</option>";            			
+        			}        			        			
+        			option = $(option).appendTo('#location');
+        			option.attr('area',area_index);
+        			option.attr('map_image_url', loc.map_image_url);
+        			option.attr('map_click_url', loc.map_click_url);
+        			area_index = area_index +1;        			
+        		}
+        		
+        		if (num_deliver_options == 0) {
+        			alert('Sorry, the online ordering is not open right now. Please wait until the next Monday. Thank you!');
+        			window.location="onlineorder.html";
+        		}
+        		
+				resetDeliveryTimeStatus();        		
+        		$("#location").change(function(){
+        			resetDeliveryTimeStatus();
+        		});
+        		
+        	}, 'json');
+    		
+    		
+    	}, 'json');
+    	
+    	
+    	$('#place_order').click(function()  {
+    		if (total_num_dishes == 0) {
+    			alert("Your order is empty");
+    			return;
+    		}
+    		else if (total_num_dishes > 10) {
+    			alert("You can only select at most 10 dishes for an order!");
+    			return;
+    		}
+    		
+    		if (!validateEmail($('#email').val())) {
+				alert("Please check your input email");
+			}
+    		else if (!validateEmailDomain($('#email').val()) && $('#email').attr('disabled') != 'disabled' ) {
+    			alert("Email must be an official academic university address! For example: @fiu.edu, @cs.fiu.edu.");
+    		}
+			else if (!validateContactName($('#contact_name').val())) {
+				alert("Please check your input contact name");
+			}
+			else if (!validateContactPhone($('#contact_phone').val())) {
+				alert("The contact phone can only be 4 to 12 digits");
+			}
+			else {
+	    		var deliver_time = $('#deliver_time option:selected').text();
+	    		var total_price = 0;
+	    		if(total_num_dishes > 0){
+	    			total_price=parseFloat($('#price_sum').text().substring(1));
+	    		}
+	    		var prepaid_balance_str = $('#prepaid_balance').text();
+	    		var prepaid_balance = 0;
+	    		if (prepaid_balance_str.length > 0)  {
+	    			prepaid_balance = parseFloat(prepaid_balance_str);
+	    			var prepaid_reduction = 0;
+	    			if (prepaid_balance >= total_price) {
+	    				prepaid_reduction = total_price;
+	    			}
+	    			else {
+	    				prepaid_reduction = prepaid_balance;
+	    			}
+		    		$('#order-confirm-dialog').html("<p>The total price of your order is <strong>$"+total_price +"</strong>"
+		    				+" and deliver time is : <strong>"+deliver_time+"</strong>. </p>"
+		    				+"<p>Your prepaid balance will cost <strong>$"+prepaid_reduction+"</strong>.  </p>"  
+		    				+"<p>You need to pay <strong>$"+(total_price-prepaid_reduction)+"</strong> when you pick up</p>");
+	    		}
+	    		else {
+		    		$('#order-confirm-dialog').html("<p>The total price of your order is <strong>$"+total_price +"</strong>"
+		    				+" and deliver time is : <strong>"+deliver_time+"</strong>. Please pay <strong>$"+total_price+"</strong> by cash when you pick up</p>");
+	    		}
+	    		$('#order-confirm-dialog').dialog({
+	    			minWidth: 560, minHeight: 160,
+	    			modal: true,
+	    			buttons: {
+	    				"Place this order": function() {
+	    					$( this ).dialog( "close" );    					
+	    					placeOrder();
+	    				},
+	    				Cancel: function() {
+	    					$( this ).dialog( "close" );
+	    				}
+	    			}
+	    		});
+			}
+    	});
+    	
+    	
+    	$('#account-tab').click(function(){
+    		$.post('UserAliveServlet', function(data){
+        		if (data.result == 'true') {
+        			window.location = "useraccount.html";
+        		}
+        		else {
+        			alert('Please sign in first');
+        			// window.location = "index.html";
+        		}
+        	}, 'json');
+    	});
+    	
+    	$.post('UserAliveServlet', function(data){
+    		if (data.result == 'true') {
+    			$('#sign-in-out-tab').text("Sign Out");
+    			$('#username').text(data.fname);
+    			if (data.type != "fb") {
+    				$("#connectfb").html('<img src="newresources/images/connectfb.png" width="75px" height="25px" />')
+    				$("#connectfb").css( 'cursor', 'pointer' );
+    				$("#connectfb").click(function() {
+    					console.log("hello")
+    					LoginFB();
+    				});
+    				$("#userinfo").css("padding-top","40px");
+    				
+    			}
+    		}
+    		else {
+    			$('#sign-in-out-tab').text("Sign In");
+    		}
+    	}, 'json');
+    	
+    	$('#sign-in-out-tab').click(function(){
+    		$.post('UserAliveServlet', function(data){
+        		if (data.result == 'true') {
+        			SignOut();
+        		}
+        		else {
+        			SignIn();
+        		}
+        	}, 'json');
+    	});
+    });
+    
+    function resetDeliveryTimeStatus() {
+    	var selected_deliver_area = $("#location option:selected").attr("area");
+    	var map_image_url = $("#location option:selected").attr("map_image_url");
+    	var map_click_url = $("#location option:selected").attr("map_click_url");
+		var first_option = true;
+		$("#deliver_time option").each(function(){
+			if ($(this).attr('area') == selected_deliver_area) {
+				$(this).removeAttr('disabled');
+				if (first_option) {
+					$(this).attr('selected','selected');
+					first_option = false;
+				}
+			}
+			else {
+				$(this).attr('disabled','disabled');
+			}
+		});
+		$("#mapimage").attr("src",map_image_url+"?" + (new Date()).getTime());
+		$("#maplink").attr("href", map_click_url);
+    }
+    
+    
+    
+    function placeOrder() {
+    	$('body').mask('Wait...', 50);
+    	_wt_click('placeorder');
+		var email = $('#email').val();
+		var location = $('#location').val();
+		var contact_name = $('#contact_name').val();
+		var contact_phone = $('#contact_phone').val();
+		var deliver_time = $('#deliver_time').val();
+		var total_price = parseFloat($('#price_sum').text().substring(1));
+		$.post('PlaceOrderServlet', {'action':'place', 
+				'email': email,
+				'location':location,
+				'deliver_time':deliver_time,
+				'contact_name':contact_name,
+				'contact_phone':contact_phone}, 
+			function(data){
+				$('body').unmask();
+				showResultFromOrderPlace(data);
+			}, 'json');
+    }
+    
+    function showResultFromOrderPlace(data) {
+    	if (data.result != 'success') {
+    		if (data.result == 'notselling') {
+    			$('#place-failed-dialog').html("<p>One of your ordered dish,"+data.dishname+", is not on sale, please check your order.</p>");
+    		}
+    		else if (data.result == 'excess') {
+    			$('#place-failed-dialog').html("<p>The quantity of your ordered dish '"+data.dishname+
+    					"' exceeds the number of on sale, please check with your order.</p>");
+    		}
+    		else if (data.result == 'wrong_deliver_time') {
+    			$('#place-failed-dialog').html("<p>The deliver time is not available now, please try again.</p>");
+    		}
+    		else {
+    			$('#place-failed-dialog').html("<p>Your order is NOT successfully placed. Please contact with the administrator.</p>");
+    		}
+    		
+			$('#place-failed-dialog').dialog({ minWidth: 560, minHeight: 100,
+					modal: true,
+					buttons: {
+						Ok: function() {
+							$( this ).dialog( "close" );
+							location.reload();
+						}
+					}
+			});
+		}
+		else {
+			var orderIdsByRestaurant = data.order_id;
+			var order_status = data.order_status;
+			var order_id_str = "";
+			for (var order_id in orderIdsByRestaurant) {
+				order_id_str += "<p>"+order_id+" for "+orderIdsByRestaurant[order_id]+"</p>";
+			}
+			if (order_status == 'placed') { // placed this order
+				$('#order-placed-dialog #placed-order-id').html(order_id_str);
+				$('#order-placed-dialog').dialog({ minWidth: 560, minHeight: 100,
+					modal: true,
+					buttons: {
+						Ok: function() {
+							$( this ).dialog( "close" );
+							window.location = "onlineorder.html";
+						}
+					}
+				});
+			}
+			else { // need to confirm
+				$('#order-submitted-dialog #submitted-order-id').html(order_id_str);
+				$('#order-submitted-dialog').dialog({ minWidth: 560, minHeight: 100,
+					modal: true,
+					buttons: {
+						Ok: function() {
+							$( this ).dialog( "close" );
+							window.location = "onlineorder.html";
+						}
+					}
+				});
+			}
+		}
+    }
+</script>
+</head>
+
+<body>
+	<div>
+		<img style="float:left;" src="newresources/images/banner.png"/>
+		<div id="userinfo" style="float:right;margin-right:100px; padding-top:70px;">Welcome,&nbsp;<a id="username" style="font-weight:bold;" href="useraccount.html"></a><div id="connectfb"></div></div>
+        <div class="topnav">
+			<a href="index.html"><img src="newresources/images/logo.png" /></a>
+			<ul id="menu">
+				<li><a id="order-tab" class="tab-button" href="onlineorder.html">All Foods</a></li>
+				<li><a id="account-tab" class="tab-button" href="#">My Account</a></li>
+				<li><a id="shoppingcart-tab" class="tab-button" href="shoppingcart.html">Shopping Cart</a></li>
+				<li><a id="placeorder-tab" class="tab-button" href="placeorder.html">Place Order</a></li>
+			<!-- 	<li><a id="register-tab" class="tab-button" href="register.html">Registration</a></li> -->
+				<li><a id="sign-in-out-tab" class="tab-button" href="#">Sign Out</a></li>
+			</ul>
+		</div>
+	</div>
+	<div id="content">
+		<div id="main">
+			<p class="title">Please confirm your meal order for : </p>
+			<table class="hor-table" id='order-table'  style="width:770px;" border="3" border-style="dashed" cellpadding="10">
+				<thead>
+					<tr>
+						<th>Dish Name</th>
+						<th>Side Dish</th>
+						<th>Staple Food</th>
+					    <th>Restaurant</th>
+					    <th>Quantity</th>
+					    <th>Price</th>
+					</tr>
+				</thead>
+				<tfoot>
+				    <tr>
+				       <td><strong>Sum</strong></td>
+				       <td></td>
+				       <td></td>
+				       <td></td>
+				       <td id='quantity_sum'></td>
+				       <td id='price_sum'></td>
+				    </tr>
+				 </tfoot>
+			     <tbody id="order_dishes">			         
+			     </tbody>
+			</table>
+			<div style="float:right;"><a type="button" class="button" href="shoppingcart.html">Change Order</a></div>
+			<p style="clear:both;"></p>
+			<p class="title">Please input your contact information</p>
+			<label>(If you want to gain credit score, please sign in first before you place the order)</label>
+			<form>
+				<table class="hor-table" style="width:770px;" border="3" >
+			      <tr>
+			        <td>Email:</td>
+			        <td><label>
+			          <input type="text" name="email" id="email">
+			        </label></td>
+			       </tr>
+			      <tr>
+			      	<td>Deliver Location: </td>
+			        <td>
+			        	<label>
+			        	    <select name="location" id="location" >
+			        	    	<option area="FIUMMC" selected="selected" value="ECS West Loading Zone, FIU Main Campus, Miami, FL 33199">ECS West Loading Zone, FIU Main Campus, Miami, FL 33199</option>
+			        	    	<!-- <option area="FIUEC" value="The school bus stop on the west side of the building, FIU Engineering Center, Miami, FL 33172">The school bus stop on the west side of the building, FIU Engineering Center, Miami, FL 33172</option> -->
+			        	    </select>
+			        	    <br/>
+			        	    <strong>The deliver location is annotated by the <font style="color:red;">red rectangle</font> in the following map:</strong>
+			        	    <a id="maplink" href="http://maps.google.com/?q=Engineering%20Computer%20Science,%20Modesto%20A.%20Maidique%20Campus,%20Miami,%20FL%2033174"><img id="mapimage" src="newresources/images/maps/deliver_location_ecs.jpg" width=600 height=480 /></a>
+			          		<!-- <textarea rows="6" cols="30" id="location"></textarea> -->
+			        	</label>
+			        </td>
+			      </tr>
+			      <tr>
+			      	<td>Deliver Time: </td>
+			        <td>
+			        	<select name="deliver_time" id="deliver_time">
+						</select>
+					</td>
+			      </tr>
+			      <tr>
+			      	<td>Contact Name: </td>
+			        <td><label>
+			          <input type="text" name="contact_name" id="contact_name">
+			        </label></td>
+			      </tr>
+			      <tr>
+			      	<td>Contact Phone: </td>
+			        <td><label>
+			          <input type="text" name="contact_phone" id="contact_phone">
+			        </label></td>
+			      </tr>
+			      <tr>
+			      	<td>Prepaid Balance: </td>
+			        <td>$<label id="prepaid_balance"></label></td>
+			      </tr>
+			      <tr>
+			        <td><label>
+			          <input type="reset" class="button"  name="reset" id="reset" value="Reset">
+			        </label></td>
+			        <td><label>
+			          <button type="button" class="button" style="width:100px;height:80px"id="place_order">Place Order</button>
+			        </label></td>
+			        </tr>
+			    </table>
+			</form>
+		</div>
+		<div id="sidebar"></div>			
+	</div>
+	<div id="footer">
+		<ul>
+			<li><a href="index.html">Home page</a> |</li>
+			<li><a href="useraccount.html">My Account</a> |</li>
+			<li><a href="placeorder.html">Checkout</a> |</li>
+			<li><a href="contactus.html">F.A.Q.</a> |</li>
+			<li><a href="contactus.html">Contacts</a></li>
+		</ul>
+		<p>Copyright: All rights reserved. Design from FIU KDRG Group</p>																																																																				<div class="inner_copy"><a href="http://sc.chinaz.com/">beautiful</a><a href="http://sc.chinaz.com/">grunge</a></div>
+	</div>
+
+</body>
+<div style="display: none;" class="demo-description">
+	<!-- Login dialog -->
+	<div id="order-confirm-dialog" title="Order confirm" ></div>
+	<div id="order-placed-dialog" title="Your order is already placed">
+		<p>
+			<span id="order-placed-dialog" class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+			Your order has been placed. 
+		</p>
+		<br/>
+		<p>
+			Your order number(s): <b id="placed-order-id"></b>
+		</p>
+		<br/>
+		<p>
+			
+		</p>
+		<br/>
+		<p>
+			<strong style="font-weight:bold;color:red">You can pay this order when you pick up your lunchbox (Cash Only , excluding the free dish)</strong>. If you want to cancel or change this order, please contact the administrator.
+		</p>
+	</div>
+	<div id="order-submitted-dialog" title="Your order is submitted">
+		<p>
+			<span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+			Your order has been submitted. An email for the order confirmation has been sent to you. <strong style="font-weight:bold;color:red">You MUST confirm this order in this email</strong>, otherwise this place will not be placed. 
+			Please go to your email inbox to confirm this order. 
+		</p>
+		<br/>
+		<p>
+			Your order number(s):
+		</p>
+		<br/>
+		<p>
+			<b id="submitted-order-id"></b>
+		</p>
+		<br/>
+		<p>
+		   <strong style="font-weight:bold;color:red">You can pay this order when you pick up your lunchbox (Cash Only )</strong>. If you want to cancel or change this order, please contact the administrator.
+		</p>
+	</div>
+	<div id="place-failed-dialog" title="Failed to place your order">
+		<p>Your order is NOT successfully placed. Please contact with the administrator.</p>
+	</div>
+	<div id="sign-in-dialog" title="Member Sign In">
+		
+		<p><div style="width:50px;">Email:</div> <input type="text" name="sign-in-email" id="sign-in-email" /></p>
+		<p><div style="width:50px;">Password:</div><input type="password" name="sign-in-password" id="sign-in-password" style="margin-bottom:20px"/></p>
+		<hr style="border-color:red;">
+		<div style="margin:5px 0px 5px 150px">
+		<div id="fb-login-button" style="cursor:pointer;background-image:url('newresources/images/fb-login-button.png');width:154px;height:22px;float:left">
+		</div> 
+		<p style="display:inline;padding-left:5px;">or<a href="register.html" style="color:red;text-decoration:none;"> Sign up</a></div></p>
+		
+	</div>
+</div>
+
+</html>

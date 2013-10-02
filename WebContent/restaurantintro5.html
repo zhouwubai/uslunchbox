@@ -1,0 +1,158 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Miami Chinese Restaurant</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="newresources/css/lunchbox2.css" rel="stylesheet"
+	type="text/css" />
+<link rel="stylesheet" type="text/css" href="newresources/css/style.css" />
+<link rel="stylesheet" type="text/css" href="newresources/css/intro.css" />
+<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+		
+		$.post('IntroPageServlet', {
+			'restaurantid' : '5'
+		}, function(data) {
+			getBasicInfo(data.info);
+			getRestaurantImage(data.info['rid']);
+			getRestaurantIntroImages(data.info['rid'],6);
+			getRestaurantNews(data.news);
+			getRestaurantReviews(data)
+		}, 'json');
+
+		$('.tab-button').css({
+			width : '110px',
+			height : '32px',
+			"font-weight" : 'bold'
+		});
+
+	});
+
+	function getBasicInfo(info) {
+		var name = "<h2>" + info.rname + "</h2>";
+		var basicinfo = "<table class='hor-table'>" + "<tr><td>"
+				+ info.raddress + "</td></tr>" + "<tr><td>" + info.rcity + ", "
+				+ info.rstate + " " + info.rzip + "</td></tr>" + "<tr><td>"
+				+ info.rphone + "</td></tr>" + "<tr><td>" + info.rurl
+				+ "</td></tr>" + "</table>";
+		var intro = "<p>" + info.rintro + "</p>";
+		$('#restintro').append(name);
+		$('#restintro').append(basicinfo);
+		$('#restaurantintro').append(intro);
+	}
+	
+	function getRestaurantImage(restId){
+		var restImage = 'newresources/images/restaurantimages/maps/rest_'+restId+'.jpg';
+    	var rest = "<img src='"+restImage+"' width=100% height=100% />";
+		$('#map').append(rest);
+	}
+	
+	function getRestaurantIntroImages(restId, num){
+		var i=1;
+		for(i=1;i<=num;i++){
+			var itemImage = 'newresources/images/restaurantimages/introimages/rest_'+restId+'_'+i+'.jpg';
+        	var item = "<div class='item'><img src='"+itemImage+
+        			"' width='180' height='140' /></div>";
+    		$('#items').append(item);
+		}
+	}
+	
+	function getRestaurantNews(news){
+		$.each(news, function(index, n) {
+        	var item = "<li><div><div>"
+        	+n.ncontent+"</div><span>Category:"
+        	+n.ntype+"</span></div></li>"; 
+    		$('#news').append(item);
+		});
+	}
+	
+	function getRestaurantReviews(data){
+		var message;
+		if(data.message == 'noreview'){
+			message = "<p>Sorry, there is no review for this restaurant.</p>"
+			$('#review').append(message);
+		}else if(data.message == 'success'){
+			var reviews = data.review;
+			$.each(reviews, function(index, r){
+				//var item = "<div><div><div class=\"rating\"><span class=\"stars_5\"><img width=84 height=325 src=\"newresources/images/stars_map.png\" /></span></div>";
+				var item = "<div>";
+				item += "<div class=\"ratingdate introtext\">"+r.date+"</div></div>";
+				item += "<p class=\"introtext\">"+r.content+"</p></div>";
+				$('#review').append(item);
+			});
+		}else{
+			message = "<p>Sorry, an error has occured. Please contact with the administrator.</p>";
+			$('#review').append(message);
+		}
+	}
+
+</script>
+
+</head>
+<body>
+	<table id="mainTable" width="100%" cellpadding="0" cellspacing="0">
+		<tr>
+			<td></td>
+			<td id="header">
+				<table width="100%" cellpadding="0" cellspacing="0">
+					<tr>
+						<td><a href="lunchbox1.html"><img src="newresources/images/lunchbox/LOGO.png" /></a></td>
+						<!-- 
+						<td valign="bottom">
+							<ul class="menu" id="menu">
+								<li id="a1"><a href="#" class="menulink" runat="server">Home</a>
+								</li>
+								<li id="a2"><a href="#" class="menulink" runat="server">Restaurants▼</a>
+									<ul>
+										<li class="topline"><a href="#" runat="server">Sub
+												menu 1</a></li>
+										<li><a href="#" runat="server">Sub menu 2</a></li>
+									</ul>
+								</li>
+							</ul>
+						</td> 
+						-->
+						<td align="right">
+							<table cellpadding="2" cellspacing="0">
+								<tr>
+									<td style="color: White"><b><a href="lunchbox1.html">[back]</a>
+									</b></td>
+									<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								</tr>
+								<!-- tr>
+									<td valign="middle"><input type="text" size="45" /> <input
+										class="button" type="button" value="Search" /></td>
+								</tr-->
+							</table></td>
+					</tr>
+				</table></td>
+			<td style="width: 10px"></td>
+		</tr>
+		<tr>
+			<td id="mainBodyLeft" style="height: 577px"></td>
+			<td style="height: 577px">&nbsp; <!--	<img style="align:top;" width="400px" src="newresources/images/lunchbox/slogan-gold.png" /> -->
+
+				<table id="introTable" width="100%">
+					<tr>
+						<td style="width: 33%; float: left">
+							<div id="restintro" class="left-page" style="height: 35%"></div>
+							<div id="map" class="left-page-image" style="height: 30%"></div>
+							<div id="news" class="left-page" style="height: 35%"></div></td>
+						<td style="width: 63%;float: right">
+							<div class="left-page" style="width: 100%; height: 20%">
+								<img src="newresources/images/restaurantimages/WingFa.jpg" alt="" width="159" height="132" />
+								<span id="restaurantintro" class="introtext" style="width: 60%; height: 70%; float: left;"></span>
+							</div>
+							<div id="items" class="left-page" style="width: 100%; height: 40%">
+							</div>
+							<div id="review" class="left-page" style="width: 100%; height: 35%"></div></td>
+					</tr>
+				</table></td>
+			<td id="mainBodyRight" style="width: 10px; height: 577px;"></td>
+		</tr>
+	</table>
+
+</body>
+</html>

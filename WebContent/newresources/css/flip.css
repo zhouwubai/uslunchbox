@@ -1,0 +1,125 @@
+.rotate{
+			-webkit-transition-duration: 0.8s;
+			-moz-transition-duration: 0.8s;
+			-o-transition-duration: 0.8s;
+			transition-duration: 0.8s;
+			
+			-webkit-transition-property: -webkit-transform;
+			-moz-transition-property: -moz-transform;
+			-o-transition-property: -o-transform;
+			transition-property: transform;
+			
+			overflow:hidden;
+		}	
+
+		.rotate:hover	
+		{ 
+			-webkit-transform:rotate(60deg);
+			-moz-transform:rotate(60deg); 
+			-o-transform:rotate(60deg);
+		}	
+		
+		.panel {
+			float: left;
+			width: 120px;
+			height: 120px;
+			margin: 0px;
+			position: relative;
+			font-size: .8em;
+			
+			-webkit-perspective: 600px;
+			-moz-perspective: 600px;
+		}
+		/* -- make sure to declare a default for every property that you want animated -- */
+		/* -- general styles, including Y axis rotation -- */
+		.panel .front {
+			float: none;
+			position: absolute;
+			top: 0;
+			left: 0;
+			z-index: 900;
+			width: inherit;
+			height: inherit;
+			border: 1px solid #ccc;
+			background: #6b7077;
+			text-align: center;
+
+			-moz-box-shadow: 0 1px 5px rgba(0,0,0,0.9);
+			-webkit-box-shadow: 0 1px 5px rgba(0,0,0,0.9);
+			box-shadow: 0 1px 5px rgba(0,0,0,0.9);
+
+			-webkit-transform: rotateX(0deg) rotateY(0deg);
+			-webkit-transform-style: preserve-3d;
+			-webkit-backface-visibility: hidden;
+
+			-moz-transform: rotateX(0deg) rotateY(0deg);
+			-moz-transform-style: preserve-3d;
+			-moz-backface-visibility: hidden;
+
+			/* -- transition is the magic sauce for animation -- */
+			-o-transition: all .4s ease-in-out;
+			-ms-transition: all .4s ease-in-out;
+			-moz-transition: all .4s ease-in-out;
+			-webkit-transition: all .4s ease-in-out;
+			transition: all .4s ease-in-out;
+		}
+		.panel.flip .front {
+			z-index: 900;
+			border-color: #eee;
+			background: #333;
+
+			-webkit-transform: rotateY(180deg);
+			-moz-transform: rotateY(180deg);
+			
+			-moz-box-shadow: 0 15px 15px rgba(0,0,0,0.2);
+			-webkit-box-shadow: 0 15px 15px rgba(0,0,0,0.2);
+			box-shadow: 0 15px 15px rgba(0,0,0,0.2);
+		}
+		
+		.panel .back {
+			float: none;
+			position: absolute;
+			top: 0;
+			left: 0;
+			z-index: 900;
+			width: inherit;
+			height: inherit;
+			border: 1px solid #ccc;
+			background: #333;
+			/*text-shadow: 1px  1px 1px rgba(0,0,0,0.6); */
+			
+			-webkit-transform: rotateY(-180deg);
+			-webkit-transform-style: preserve-3d;
+			-webkit-backface-visibility: hidden;
+
+			-moz-transform: rotateY(-180deg);
+			-moz-transform-style: preserve-3d;
+			-moz-backface-visibility: hidden;
+
+			/* -- transition is the magic sauce for animation -- */
+			-o-transition: all .4s ease-in-out;
+			-ms-transition: all .4s ease-in-out;
+			-moz-transition: all .4s ease-in-out;
+			-webkit-transition: all .4s ease-in-out;
+			transition: all .4s ease-in-out;
+		}
+		
+		.panel.flip .back {
+			z-index: 900;
+			background: #80868d;
+
+			-webkit-transform: rotateX(0deg) rotateY(0deg);
+			-moz-transform: rotateX(0deg) rotateY(0deg);
+
+			box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+			-moz-box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+			-webkit-box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+		}
+		
+		.blinkytext {
+		     font-family: Arial, Helvetica, sans-serif;
+		     font-size: 1.1em;
+		     text-decoration: blink;
+		     font-style: normal;
+		     color: brown;
+		 }

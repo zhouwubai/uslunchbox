@@ -1,0 +1,409 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>USLUNCHBOX</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="cache-control" content="max-age=0" />
+<meta http-equiv="cache-control" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+<meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+<meta http-equiv="pragma" content="no-cache" />
+<link rel="stylesheet" type="text/css" href="newresources/css/style.css" />
+<link type="text/css" href="css/smoothness/jquery-ui-1.8.17.custom.css" rel="Stylesheet" />
+<link href="css/loadmask/jquery.loadmask.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="js/jquery.maxlength.min.js"></script>
+<script type="text/javascript" src="js/jquery.loadmask.min.js"></script>
+<script type="text/javascript" src="js/uslunchbox_common.js"></script>
+<script src="js/sha1.js" type="text/javascript"></script>
+<script type="text/javascript">
+var _wt_account = "uslunchbox2";
+(function() {
+	var st = document.createElement('script'); st.type = 'text/javascript';st.async = true; st.src =  'http://23.23.192.51/WebTracker/js/wt.js';
+	var s = document.getElementsByTagName('script')[0];s.parentNode.insertBefore(st, s);
+})();
+
+	$(document).ready(function() {
+    	$('#newPassword,#confirmPassword').maxlength({max: 20});
+    	$('#phone').maxlength({max: 10});
+    	
+		$.post('UserAliveServlet', function(data){
+    		if (data.result == 'true') {
+    			$('#username').text(data.fname);
+    			if (data.type != "fb") {
+    				$("#connectfb").html('<img src="newresources/images/connectfb.png" width="75px" height="25px" />')
+    				$("#connectfb").css( 'cursor', 'pointer' );
+    				$("#connectfb").click(function() {
+    					console.log("hello")
+    					LoginFB();
+    				});
+    				$("#userinfo").css("padding-top","40px");
+    				
+    			}
+    		}
+    		else {
+    			alert('Please sign in first!');
+    			window.location = "onlineorder.html";
+    		}
+    	}, 'json');
+		
+		$('#profile-tab').click();
+		$('#menu').buttonset().css({"margin-left": 2});
+    	$('.tab-button').css({width: '110px', height:'32px', "font-weight":'bold'});
+    	
+    	$('#account-tab').click(function(){
+    		$.post('UserAliveServlet', function(data){
+        		if (data.result == 'true') {
+        			window.location = "useraccount.html";
+        		}
+        		else {
+        			alert('Please sign in first!');
+        			window.location = "onlineorder.html";
+        		}
+        	}, 'json');
+    	});
+    });
+    
+	function showProfile(){
+		//$('body').mask('Loading...', 100);
+		$.get('UserAccountServlet', function(list){
+			$('body').unmask();
+			if (list.result == 'notsignin') {
+				alert("Please sign in first."); 
+				window.location = "onlineorder.html";
+				return;
+			}
+			if (list.result == 'nositeinfo') {
+				alert("Please choose a site first."); 
+				window.location = "onlineorder.html";
+				return;
+			}
+			if (list.result != 'success') {
+				alert("Querying the user's profile is failed, please contact the administrator!");
+				return;
+			}
+			$('#profile_tab').show();
+			$('#order_tab').hide();
+			$('#firstn').empty();
+    		$('#firstn').append(list.first_name);
+    		$('#lastn').empty();
+    		$('#lastn').append(list.last_name);
+    		$('#middlen').empty();
+    		$('#middlen').append(list.middle_name);
+    		$('#nickn').empty();
+    		$('#nickn').text(list.nick_name);
+    		$('#insti').empty();
+    		$('#insti').append(list.institution_name);
+    		$('#email').empty();
+    		$('#email').append(list.email);
+    		$('#membs').empty();
+    		$('#membs').append(list.register_date);
+    		$('#membl').empty();
+    		$('#membl').append(list.priviledge_type);
+    		$('#prepaid_balance').empty();
+    		$('#prepaid_balance').append("$<font color=\"red\">" + list.prepaid_balance + "</font>.");
+    		$('#phone').empty();
+    		//$('#phone').append(list.phone_number);
+    		$("#phone").val(list.phone_number);
+    	}, 'json');
+
+		
+	}
+
+	function SignOut() {
+    	$.post('UserLogOutServlet', function(data){
+    		//location.reload();
+    		window.location = "onlineorder.html";
+    	}, 'json');
+    }
+	
+	function showHistory(){
+		//$('body').mask('Loading...', 100);
+		$.get('UserOrderHistoryServlet', function(list){
+			$('body').unmask();
+			if (list.result == 'notsignin') {
+				//alert("Please sign in first."); 
+				window.location = "onlineorder.html";
+				return;
+			}
+			if (list.result == 'nositeinfo') {
+				alert("Please choose a site first."); 
+				window.location = "onlineorder.html";
+				return;
+			}
+			
+			$('#test').empty();
+			$('#profile_tab').hide();
+			$('#order_tab').show();
+			
+			var table = $('#test');
+			var thead = $('<thead>').append($('<tr>').append($('<th>').text("Order Number"))
+			    .append($('<th>').text("Order Time"))
+				.append($('<th>').text("Status"))
+				.append($('<th>').text("Dishes"))
+				.append($('<th>').text("Price"))
+				//.append($('<th>').text("CardNo"))
+				.append($('<th>').text("Method"))
+				.append($('<th>').text("Restaurant"))
+				.append($('<th>').text("Restaurant Contact")));
+			$(thead).appendTo(table);
+			
+			$('#test').append('<tbody>');
+			var tbody = $('#test tbody');
+			$.each(list.orders, function(index, data) {
+				//alert("fff: " + data.d_price);
+				if(data.o_status == "valid"){
+					$('<tr>').appendTo(tbody)
+					//.append($('<td>').text(data.d_location))
+					.append($('<td>').text(data.d_order_id))
+					.append($('<td>').text(data.d_placetime))
+					//.append($('<td>').text(data.d_time))
+					.append($('<td>').text(data.d_status))
+					.append($('<td>').text(data.d_dishes))
+					.append($('<td>').text("$"+data.d_price))
+					//.append($('<td>').text(data.card_no))
+					.append($('<td>').text(data.d_method))
+					.append($('<td>').text(data.r_name))
+					.append($('<td>').text(data.r_phone));
+					//.append($('<td>').text(data.r_addr))
+		  	  		//.append($('<td>').text(data.r_city))
+		        	//.append($('<td>').text(data.r_state))
+		        	//.append($('<td>').text(data.r_country));
+					//.append($('<td>').text("cancel, modify"));
+				}else{
+					$('<tr>').appendTo(tbody)
+						//.append($('<td>').text(data.d_location))
+						.append($('<td>').text(data.d_order_id))
+						.append($('<td>').text(data.d_placetime))
+						//.append($('<td>').text(data.d_time))
+						.append($('<td>').text(data.d_status))
+						.append($('<td>').text(data.d_dishes))
+						.append($('<td>').text("$"+data.d_price))
+						//.append($('<td>').text(data.card_no))
+						.append($('<td>').text(data.d_method))
+						.append($('<td>').text(data.r_name))
+						.append($('<td>').text(data.r_phone));
+						//.append($('<td>').text(data.r_addr))
+			  	  		//.append($('<td>').text(data.r_city))
+			        	//.append($('<td>').text(data.r_state))
+			        	//.append($('<td>').text(data.r_country));
+					
+				}
+			});
+		}, 'json');
+	}
+
+	function assertNotEmpty(field, fieldName) {
+		try {
+			if (field.value == "") {
+				field.select();
+				alert("The " + fieldName + " field cannot be empty.");
+				return false;
+			}
+			
+			return true;
+		} catch (err) {
+			alert("Error occurred for field " + fieldName + "\n" + new String(err));
+		}
+	}
+	
+	function changePassword(){
+		
+			if ( !assertNotEmpty(document.getElementById("newPassword"), "Password") ) return;
+			
+			with ( document.getElementById("confirmPassword") ) {
+				if (value != document.getElementById("newPassword").value) {
+					select();
+					alert("The passwords do not match.");
+					return;
+				}
+			}
+			
+			if ( !assertNotEmpty(document.getElementById("phone"), "Phone number") ) return;
+			
+			with ( document.getElementById("phone") ) {
+				if (value.search(/\D/) != -1) {
+					select();
+					alert("The phone number must only contain numbers.");
+					return;
+				} else if (value.length != 10) {
+					select();
+					alert("The phone number must be a ten-digit number.");
+					return;
+				}
+			}
+			
+			$('body').mask('Loading...', 100);
+			$.post('UpdateUserProfileServlet', {'newPassword':SHA1($('#newPassword').val())}, function(data){
+				$('body').unmask();
+        		if (data.result == 'true') {
+        			alert("You have successfully changed your password.");
+        		}
+        		else if(data.result == 'notsignin') {
+        			alert("Please sign in first.");
+        		}
+        		else {
+        			alert("Encountered an error when update your password.");
+        		}
+        	}, 'json');
+	}
+	
+	function chargePoints(amount){
+		var theAmount = $('#points span').text();
+		var total = parseInt(amount, 10) + parseInt(theAmount, 10);
+		if(total < 0)
+			total = 0;
+		$('#points span').html(total);
+	}
+	
+	function addPoints(){
+		$('body').mask('Loading...', 100);
+		$.post('UpdateUserPointServlet', {'points':$('#points span').text()}, function(data){
+			$('body').unmask();
+    		if (data.result == 'true') {
+    			$('#points span').html(0);
+    			alert("You have successfully filled points. Check you email for detail.");
+    		}else if(data.result == 'notsignin') {
+    			alert("Please sign in first.");
+    		}else {
+    			alert("Encountered an error when fill your points.");
+    		}
+    	}, 'json');
+	}
+</script>
+</head>
+
+<body>
+	<div>
+		<img style="float:left;" src="newresources/images/banner.png"/>
+		<div id="userinfo" style="float:right;margin-right:100px; padding-top:70px;">Welcome,&nbsp;<a id="username" style="font-weight:bold;" href="useraccount.html"></a><div id="connectfb"></div></div>
+        <div class="topnav">
+			<a href="index.html"><img src="newresources/images/logo.png" /></a>
+			<ul id="menu">
+				<li><a id="order-tab" class="tab-button" href="onlineorder.html">All Foods</a></li>
+				<li><a id="account-tab" class="tab-button" href="#">My Account</a></li>
+				<li><a id="shoppingcart-tab" class="tab-button" href="shoppingcart.html">Shopping Cart</a></li>
+				<li><a id="placeorder-tab" class="tab-button" href="placeorder.html">Place Order</a></li>
+				<!-- <li><a id="register-tab" class="tab-button" href="register.html">Registration</a></li> -->
+				<li><a id="sign-in-out-tab" class="tab-button" href="#" onClick="SignOut();">Sign Out</a></li>
+			</ul>
+		</div>
+	</div>
+	<div id="content">
+		<div id="sidebar" >
+			<div id="navigation" style="height:60px;">
+				<ul>
+					<li><a id="profile-tab" href="javascript:showProfile();" onclick="showProfile();">Profile</a></li>
+					<li><a id="history-tab" href="javascript:showHistory();" onclick="showHistory();">My Orders</a></li>
+				</ul>
+			</div>
+		</div>
+		<div id="profile" class="hor-table" style="margin-left:10px;">
+				<div id="profile_tab" style="display:inline">
+					<table border="1" width="700" class="hor-table" style="float:left;margin-left:10px;margin-top:20px;">
+						<tr>
+							<td><b>Name:</b></td>
+							<td><span style="font-size:12pt;" id="lastn" ></span><span style="font-size:12pt;">, &nbsp;&nbsp;</span><span style="font-size:12pt;" id="firstn" ></span>&nbsp&nbsp&nbsp<span style="font-size:12pt;" id="middlen" ></span></td>
+						</tr>
+						
+						<tr>
+							<td><b>Nickname:</b></td>
+							<td><span style="font-size:12pt;" id="nickn" ></span></td>
+						</tr>
+						
+						<tr>
+							<td><b>Institution:</b></td>
+							<td><span style="font-size:12pt;" id="insti"></span></td>
+						</tr>
+						
+						<tr>
+							<td><b>Email:</b></td>
+							<td><span style="font-size:12pt;" id="email" ></span></td>
+						</tr>
+						
+						<tr>
+							<td><b>Membership Since:</b></td>
+							<td><span style="font-size:12pt;" id="membs" ></span></td>
+						</tr>
+						
+						<tr>
+							<td><b>Prepaid balance:</b></td>
+							<td><span style="font-size:12pt;" id="prepaid_balance" ></span></td>
+						</tr>
+						
+						<!-- <tr>
+							<td><b>Fill Points:</b></td>
+							<td>
+							<div id='points'>
+								<font color="red"><span>0</span></font>
+								<input type="button" id="plusPoint" class="button" value="+$20" size="10" onclick="chargePoints(20);"/>
+								<input type="button" id="minusPoint" class="button" value="-$20" size="10" onclick="chargePoints(-20);"/>
+								<input type="button" id="addPoint" class="button" value="Submit" size="10" onclick="addPoints();"/>
+							</div>
+							</td>
+						</tr>
+						 -->
+						
+						<!-- tr>
+							<td><b>Last Access Date:</b></td>
+							<td><span  style="font-size:12pt;" id="lasta" ></span></td>
+						</tr -->
+						
+						<tr>
+							<td><b>Memership Level:</b></td>
+							<td><span style="font-size:12pt;" id="membl" ></span></td>
+						</tr>
+						
+						<tr>
+							<td><b>Contact Phone:</b></td>
+							<td><input type="text" style="font-size:12pt;" id="phone" ></input></td>
+						</tr>
+						
+						<tr>
+							<td><b><font class="heading">New Password:</font></b></td>
+							<td><input type="password" id="newPassword" name="newPassword" size="20" /><font class="required">*</font></td>
+						</tr>
+						
+						<tr>
+							<td><b><font class="heading">Confirm Password:</font></b></td>
+							<td><input type="password" id="confirmPassword" name="confirmPassword" size="20" /><font class="required">*</font></td>
+						</tr>
+						
+						<tr>
+							<td>
+							</td>
+							<td>
+								<input type="button" class="button" id="updatePassword" value="Update" size="10" onclick="changePassword();"/>
+							</td>
+						</tr>
+					</table>
+				</div>
+				
+				<div id="order_tab" style="display:inline;float:left;margin-left:10px;margin-top:20px;width:750px;">
+						<table id='test' border="1" border-style="dashed" cellpadding="20" class="hor-table">
+						</table>		
+				</div>
+		</div>
+		
+	</div>
+	<div id="footer">
+		<ul>
+			<li><a href="index.html">Home page</a> |</li>
+			<li><a href="useraccount.html">My Account</a> |</li>
+			<li><a href="placeorder.html">Checkout</a> |</li>
+			<li><a href="contactus.html">F.A.Q.</a> |</li>
+			<li><a href="contactus.html">Contacts</a></li>
+		</ul>
+		<p>Copyright: All rights reserved. Design from FIU KDRG Group</p>																																																																				<div class="inner_copy"><a href="http://sc.chinaz.com/">beautiful</a><a href="http://sc.chinaz.com/">grunge</a></div>
+	</div>
+</body>	
+<div style="display: none;" class="demo-description">
+	<div id="sign-in-dialog" title="Member Sign In">
+	    <div id="fb-login-button" style="cursor:pointer;background-image:url('newresources/images/fb-login-button.png');width:154px;height:22px;margin:20px;"></div>
+		<p><div style="width:50px;">Email:</div> <input type="text" name="sign-in-email" id="sign-in-email" /></p>
+		<p><div style="width:50px;">Password:</div><input type="password" name="sign-in-password" id="sign-in-password" /></p>
+	</div>
+</div>
+
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" type="text/css" href="newresources/css/style.css" />
+<link type="text/css" href="css/smoothness/jquery-ui-1.8.17.custom.css" rel="Stylesheet" />
+<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="js/jquery.maxlength.min.js"></script>
+<script>
+function activatePoints(){
+	alert("dfddfdfd");
+	$.post('ActivateUserPointServlet', {'email':$('#email').val()}, function(data){
+		if (data.result == 'true') {
+			alert("You successfully activated points.");
+		}else if(data.result == 'noemail') {
+			alert("Please sign in first.");
+		}else {
+			alert("Encountered an error when activate your points.");
+		}
+	}, 'json');
+}
+</script>
+
+</head>
+<body>
+<div>
+<b><font class="heading">Email:</font></b>
+<input type="text" id="email" name="email" size="40" /><font class="required">*</font>
+<input type="button" id="addPoint" class="button" value="Submit" size="10" onclick="activatePoints();"/>
+</div>
+</body>
+</html>

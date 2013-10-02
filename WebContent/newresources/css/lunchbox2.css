@@ -1,0 +1,295 @@
+﻿body 
+{
+	background-color:#200003;
+	font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
+	background-image:url("../images/lunchbox/background.jpg");
+	background-repeat:repeat-x;
+}
+
+
+#header
+{
+	height:53px;
+	width:1024px;
+	background-image:url("../images/lunchbox/texture.jpg");
+	background-repeat:repeat;
+}
+
+#mainBody
+{
+	height:331px;
+	/*background-image:url("../images/lunchbox/pic1.jpg");*/
+	background-color:#200003;
+	background-repeat:no-repeat;
+	margin-left:0 auto;
+	margin-right:0 auto;
+}
+
+#mainBodyLeft
+{
+}
+
+#mainBodyRight
+{
+}
+
+#footer
+{
+	text-align:center;
+	color:White;
+}
+
+#mainTable
+{
+	
+}
+
+#cardTable
+{
+	border-collapse:collapse;
+}
+
+#cardImgs{
+	background-image:url('../images/lunchbox/vintage_paper1.jpg');
+	background-repeat:repeat;
+}
+
+.cardImg
+{   /*
+	border-radius: 10px 10px 10px 10px;	/* round border radius
+	-moz-border-radius: 10px 10px 10px 10px;/* round border radius
+	
+	box-shadow: 0px 0px 30px #888888;
+	-moz-box-shadow: 0px 0px 30px gold;
+	-webkit-box-shadow: 0px 0px 30px gold;
+	background-color: #FFFFFF; /* For IE 8 
+	
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=20, Direction=0, Color='#888888')"; /* For IE 5.5 - 7 
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=20, Direction=0, Color='#888888');
+	*/
+	/*border-color:black;
+	border-style:solid;
+	border-bottom-width:thick;*/
+	width: 135px;
+	height: 135px;
+}
+
+#introTable
+{
+	width:100%;
+	height:100%;
+	
+}
+
+#loginForm
+{
+	
+	
+}
+
+#slideshow { 
+    margin: 1px auto; 
+    position: relative; 
+    /*width: 240px; 
+    height: 331px; 
+    padding: 10px; */
+    /* box-shadow: 0 0 20px rgba(0,0,0,0.4); */
+}
+
+#slideshow > div { 
+    position: absolute; 
+    /*top: 10px; 
+    left: 10px; 
+    right: 10px; 
+    bottom: 10px;*/ 
+}
+
+
+#baoziTable  
+{
+	width:17.5%;
+	height:46px;
+	color:Red;
+	font-size:18px;
+	vertical-align:middle;
+	text-align:center;
+	font-weight:bold;
+	background-image:url("../images/lunchbox/baozi.png");
+	
+}
+
+
+.button
+{
+	border: solid 1px #666666;
+	background-color: #FFAAAA;
+	color: #666666;
+	cursor:pointer;
+	height: 22px;
+}
+
+#mainDCLBody
+{
+	height:675px;
+	background-image:url("../images/lunchbox/vintage_paper1.jpg");
+	background-repeat:repeat;
+}
+
+#DCLBody
+{
+	background-image:url("../images/lunchbox/vintage_paper.jpg");
+	width:1000px;
+	height:640px;
+	vertical-align:top;
+	text-align:left;
+	/*font-weight:bold;*/
+	background-repeat:repeat;
+	padding: 20px;
+}
+
+/*For dropdown menu show*/
+ul.menu
+{
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	font: 14px "宋体","Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
+}
+ul.menu *
+{
+	margin: 0;
+	padding: 0;
+}
+ul.menu a
+{
+	display: block;
+	color: #EEEEEE;
+	text-decoration: none;
+}
+ul.menu li
+{
+	position: relative;
+	float: left;
+	margin: 0px;
+}
+ul.menu ul
+{
+	position: absolute;
+	top: 36px;
+	left: 1px;
+	background: #d1d1d1;
+	display: none;
+	opacity: 0;
+	list-style: none;
+}
+ul.menu ul li
+{
+	position: relative;
+	border: 1px solid #aaa;
+	border-top: none;
+	width: 148px;
+	margin: 0;
+}
+ul.menu ul li a
+{
+	display: block;
+	padding: 3px 7px 5px;
+	color: #FFFFFF;
+	/*background: url("/images/bg_titlebar.png") repeat-x scroll 0 0 transparent;*/
+	background-color:#FF4444;
+}
+ul.menu ul li a:hover
+{
+	/*background-color: #BBCCEE;*/
+	font-weight:bold;
+	background-image: none;
+}
+ul.menu ul ul
+{
+	left: 148px;
+	top: -1px;
+}
+ul.menu .menulink
+{
+	border: 0px solid #aaa;
+	padding: 10px;
+	/*font: bold 16px "宋体","Lucida Grande",Helvetica,Arial,Verdana,sans-serif;*/
+	font-size:18px;
+	color:White;
+	width: 82px;
+	height: 16px;
+}
+ul.menu .menulink:hover, ul.menu .menuhover
+{
+	font-weight:bold;
+}
+ul.menu .menulink:active, ul.menu .menuactive
+{
+	color:Red;
+}
+
+ul.menu .sub
+{
+	/*background: #d1d1d1 url(/images/arrow.gif) 136px 8px no-repeat;*/
+}
+ul.menu .topline
+{
+	border-top: 1px solid #aaa;
+	width: 300px;
+}
+ul.menu .menu_highlight
+{
+	border: 0px solid #aaa;
+	padding: 10px;
+	font: bold 16px "宋体","Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
+	/*background: url(/images/b_choose.png);*/
+	color:Red;
+	width: 82px;
+	height: 16px;
+}
+/*End of dropdown menu show*/
+
+/*Begin Login Form*/
+
+#form {
+	display: table;
+	margin: 0 auto;
+}
+#form .remember {
+	float: right;
+	padding-top: 20px;
+}
+#form input[type="text"], #form input[type="password"] {
+	margin: 0.25em 0 0.65em;
+	display: block;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border: 0px solid #FFF;
+	width: 180px;
+	height: 30px;
+	line-height: 30px;
+	padding-left: 5px;
+	font-size: 16px;
+}
+#form input[type="submit"] {
+	background-color: transparent;
+	border: none;
+	width: 60px;
+	height: 30px;
+	font-family: Helvetica;
+	font-weight: bold;
+	color: #0B73A1;
+	text-shadow: 0px 1px 1px #FFFFFF;
+	font-size: 1.4em;
+	margin-top: 10px;
+	background-image: url('/images/buttons/login.png');
+}
+#form input[type="submit"]:hover {
+	background-position: 0px -42px;
+}
+#form input[type="submit"].disabled {
+	background-position: 0px -84px !important;
+	color: #666666 !important;
+}
+
+/*End Login Form*/

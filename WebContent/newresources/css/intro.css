@@ -1,0 +1,41 @@
+.left-page{
+background-image:url("../images/lunchbox/texture.jpg");
+background-repeat:repeat;
+width:100%;
+padding:12px 0 14px 13px;
+font-family:Tahoma, sans-serif;
+font-size:11px;
+color:white;
+border-bottom:1px solid #fff;
+}
+
+.left-page-image{
+background-image:url("../images/lunchbox/texture.jpg");
+background-repeat:repeat;
+width:100%;
+padding:12px 0 14px 13px;
+border-bottom:1px solid #fff;
+}
+
+.introtext{
+	font-family:Tahoma, sans-serif;
+	font-size:16px;
+	color:white;
+}
+
+.rating{
+	height: 16px;
+	float: left;
+	position: absolute;
+	overflow: hidden !important;
+}
+
+.rating .stars_5{
+	clip:rect(171px,83px,187px,0pt);
+	top: -171px;
+}
+
+.rating .ratingdate{
+	padding: 0pt 0pt 0pt 5px;
+	float: right;
+}
